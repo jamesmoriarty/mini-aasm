@@ -2,21 +2,7 @@
 
 The [State Machine](https://en.wikipedia.org/wiki/Finite-state_machine) library is intended to be compatibility with [lightweight implementation of the Ruby language](https://github.com/mruby/mruby).
 
-## TODO
 
-- [ ] named state machines.
-
-```ruby
-aasm(:work) do
-  # ...
-end
-```
-
-- [ ] guard clauses.
-
-```ruby
-transitions from: :pending, to: :notifying, guard: :oncall?
-```
 ## Example
 
 ```ruby
@@ -110,4 +96,19 @@ end
     transitions from: :starting_instance, to: :wait_running
   end
 ```
-   
+
+## TODO
+
+- [ ] named state machines.
+
+```ruby
+aasm(:work) do
+  # ...
+end
+```
+
+- [ ] guard clauses.
+
+```ruby
+transitions from: :pending, to: :notifying, guard: :oncall?
+```
