@@ -12,19 +12,34 @@ require "minitest/autorun"
 
 module AASM
   class Configuration
-    attr_reader :klass, :states
+    attr_reader :klass, :states, :events
+
+    class Event < Array
+      attr_reader :name
+
+      def initialize(name)
+        @name = name
+      end
+
+      def transitions(from:, to:)
+        self << [from, to] 
+      end
+    end
 
     def initialize(klass)
       @klass = klass
       @states = {}
+      @events = {}
     end
 
     def state(name, opts = {})
       states[name] = opts
     end
 
-    def event(name)
-
+    def event(name, &block)
+      event = Event.new(name)
+      event.instance_eval(&block)
+      events[name] = event
     end
 
     def configure!
@@ -39,6 +54,22 @@ module AASM
       klass.define_method(:current_state) do
         @current_state ||= _aasm.initial_state
       end
+
+      klass.define_method(:set_current_state) do |state|
+        @current_state = state
+      end
+
+      events.each do |(name, event)|
+        klass.define_method(:"#{event.name}!") do
+          transitions = event.select { |(from, _)| from == current_state }
+          _, to = transitions.first
+
+          return current_state unless to
+
+          set_current_state to
+        end
+      end
+
     end
 
     def initial_state
@@ -91,9 +122,11 @@ describe AASM do
       end
     end
 
-    describe "#event" do
-      it "defines event method" do
-        _(@subject.work_succeeded!).must_equal true
+    describe "#<event>!" do
+      it "change changes matching from #current_state" do
+        _(@subject.work_succeeded!).must_equal :running
+        _(@subject.work_succeeded!).must_equal :finished
+        _(@subject.work_succeeded!).must_equal :finished
       end
     end
   end
