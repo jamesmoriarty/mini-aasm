@@ -14,36 +14,38 @@ require 'minitest/autorun'
 
 module AASM
   class Configuration
-    attr_reader :klass, :states, :events
+    module DSL
+      class Event < Array
+        attr_reader :name
 
-    class Event < Array
-      attr_reader :name
+        def initialize(name)
+          @name = name
+        end
 
-      def initialize(name)
-        @name = name
-
-        super
+        def transitions(from:, to:)
+          self << [from, to]
+        end
       end
 
-      def transitions(from:, to:)
-        self << [from, to]
+      def state(name, opts = {})
+        states[name] = opts
+      end
+
+      def event(name, &block)
+        event = Event.new(name)
+        event.instance_eval(&block)
+        events[name] = event
       end
     end
+
+    include DSL
+    
+    attr_reader :klass, :states, :events
 
     def initialize(klass)
       @klass = klass
       @states = {}
       @events = {}
-    end
-
-    def state(name, opts = {})
-      states[name] = opts
-    end
-
-    def event(name, &block)
-      event = Event.new(name)
-      event.instance_eval(&block)
-      events[name] = event
     end
 
     def configure!
