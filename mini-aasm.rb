@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 require 'bundler/inline'
 
@@ -6,9 +7,10 @@ gemfile do
   source 'https://rubygems.org'
   gem 'pry', require: true
   gem 'minitest'
+  gem 'rubocop'
 end
 
-require "minitest/autorun"
+require 'minitest/autorun'
 
 module AASM
   class Configuration
@@ -19,10 +21,12 @@ module AASM
 
       def initialize(name)
         @name = name
+
+        super
       end
 
       def transitions(from:, to:)
-        self << [from, to] 
+        self << [from, to]
       end
     end
 
@@ -59,21 +63,19 @@ module AASM
         @current_state = state
       end
 
-      events.each do |(name, event)|
+      events.each do |(_name, event)|
         klass.define_method(:"#{event.name}!") do
           transitions = event.select { |(from, _)| from == current_state }
           _, to = transitions.first
-
           return current_state unless to
 
           set_current_state to
         end
       end
-
     end
 
     def initial_state
-      states.find { |(name, opts)| opts[:initial] }.first
+      states.find { |(_name, opts)| opts[:initial] }.first
     end
   end
 
@@ -98,7 +100,7 @@ describe AASM do
       state :creating, initial: true
       state :running
       state :finished
-  
+
       event :work_succeeded do
         transitions from: :creating, to: :running
         transitions from: :running, to: :finished
@@ -106,27 +108,27 @@ describe AASM do
     end
   end
 
-    before do
-      @subject = Job.new
-    end
-  
-    describe "#states" do
-      it "returns array of declared states" do
-        _(@subject.states).must_equal [:creating, :running, :finished]
-      end
-    end
-  
-    describe "#current_state" do
-      it "returns current state" do
-        _(@subject.current_state).must_equal :creating
-      end
-    end
+  before do
+    @subject = Job.new
+  end
 
-    describe "#<event>!" do
-      it "change changes matching from #current_state" do
-        _(@subject.work_succeeded!).must_equal :running
-        _(@subject.work_succeeded!).must_equal :finished
-        _(@subject.work_succeeded!).must_equal :finished
-      end
+  describe '#states' do
+    it 'returns array of declared states' do
+      _(@subject.states).must_equal %i[creating running finished]
     end
   end
+
+  describe '#current_state' do
+    it 'returns current state' do
+      _(@subject.current_state).must_equal :creating
+    end
+  end
+
+  describe '#<event>!' do
+    it 'change changes matching from #current_state' do
+      _(@subject.work_succeeded!).must_equal :running
+      _(@subject.work_succeeded!).must_equal :finished
+      _(@subject.work_succeeded!).must_equal :finished
+    end
+  end
+end
