@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "pry"
+
 require "minitest"
 require "minitest/autorun"
 require "minitest/reporters"

@@ -50,6 +50,14 @@ describe MiniAASM do
           _(@subject.set_current_state(:terminated)).must_equal :terminated
           assert_raises(MiniAASM::InvalidTransition) { @subject.work_succeeded! }
         end
+
+        describe "guard" do
+          it "raises exception when eval to false" do
+            @subject = PeriodicJob.new(ready: false)
+
+            assert_raises(MiniAASM::InvalidTransition) { @subject.work_succeeded! }
+          end
+        end
       end
     end
   end

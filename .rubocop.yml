@@ -14,8 +14,11 @@ Layout/LineLength:
   Exclude:
     - mini-aasm.gemspec
 
+Metrics/CyclomaticComplexity:
+  Max: 10
+
 Metrics/AbcSize:
-   Max: 30
+  Max: 30
 
 Metrics/MethodLength:
   Max: 20

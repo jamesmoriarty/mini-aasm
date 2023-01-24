@@ -25,8 +25,8 @@ module MiniAASM
           super()
         end
 
-        def transitions(from:, to:)
-          self << [[from].flatten, to]
+        def transitions(from:, to:, guard: [])
+          self << [[from].flatten, to, [guard].flatten]
         end
       end
 
@@ -73,7 +73,7 @@ module MiniAASM
       events.each do |(name, event)|
         klass.define_method(:"#{name}!") do
           transitions = event.select { |(from_states, _)| from_states.include?(current_state) }
-          _, to_state = transitions.first
+          _, to_state = transitions.find { |(_, _, guards)| guards.all? { |guard| send(guard) } }
 
           raise InvalidTransition unless to_state
 

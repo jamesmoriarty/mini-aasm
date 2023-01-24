@@ -10,12 +10,16 @@ class PeriodicJob
 
     event :work_succeeded do
       transitions from: :executing, to: :waiting
-      transitions from: :waiting, to: :executing
+      transitions from: :waiting, to: :executing, guard: %i[ready?]
     end
 
     event :work_failed do
       transitions from: %i[waiting executing], to: :terminated
     end
+  end
+
+  def initialize(ready: true)
+    @ready = ready
   end
 
   def work
@@ -27,10 +31,16 @@ class PeriodicJob
   def work_executing
     # ...
     work_succeeded!
+  rescue => e
+    work_failed!
   end
 
   def work_waiting
     # ...
     work_succeeded!
+  end
+
+  def ready?
+    !!@ready
   end
 end

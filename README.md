@@ -5,37 +5,24 @@ A State Machine library intended to be compatible with lightweight implementatio
 ## Usage
 
 ```ruby
-require 'mini-aasm'
-
-class DBInstance
+class PeriodicJob
   include MiniAASM
 
   aasm do
-    state :creating, initial: true
-    state :running
-    state :stopping
-    state :starting_instance
-    state :wait_running
+    state :waiting, initial: true
+    state :executing
+    state :terminated
 
-    event :created do
-      transitions from: :creating, to: :wait_running
+    event :work_succeeded do
+      transitions from: :executing, to: :waiting
+      transitions from: :waiting, to: :executing, guard: %i[ready?]
     end
 
-    event :detect_online do
-      transitions from: :wait_running, to: :running
+    event :work_failed do
+      transitions from: %i[waiting executing], to: :terminated
     end
 
-    event :detect_unavailable do
-      transitions from: :running, to: :stopping
-    end
-
-    event :stopped do
-      transitions from: :stopping, to: :starting_instance
-    end
-
-    event :started do
-      transitions from: :starting_instance, to: :wait_running
-    end
+    # ...
   end
 end
 ```
