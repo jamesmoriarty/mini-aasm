@@ -7,14 +7,24 @@ gemfile do
   source 'https://rubygems.org'
   gem 'pry', require: true
   gem 'minitest'
+  gem 'minitest-reporters'
   gem 'rubocop'
 end
 
-require 'minitest/autorun'
+module MiniAASM
+  class InvalidTransition < RuntimeError; end
+  class UndefinedState < RuntimeError; end
 
-module AASM
   class Configuration
     module DSL
+      module ClassMethods
+        def aasm(&block)
+          config = Configuration.new(self)
+          config.instance_eval(&block)
+          config.configure!
+        end
+      end
+
       class Event < Array
         attr_reader :name
 
@@ -23,7 +33,7 @@ module AASM
         end
 
         def transitions(from:, to:)
-          self << [from, to]
+          self << [[from].flatten, to]
         end
       end
 
@@ -39,7 +49,7 @@ module AASM
     end
 
     include DSL
-    
+
     attr_reader :klass, :states, :events
 
     def initialize(klass)
@@ -62,16 +72,19 @@ module AASM
       end
 
       klass.define_method(:set_current_state) do |state|
+        raise UndefinedState unless states.include?(state)
+
         @current_state = state
       end
 
-      events.each do |(_name, event)|
-        klass.define_method(:"#{event.name}!") do
-          transitions = event.select { |(from, _)| from == current_state }
-          _, to = transitions.first
-          return current_state unless to
+      events.each do |(name, event)|
+        klass.define_method(:"#{name}!") do
+          transitions = event.select { |(from_states, _)| from_states.include?(current_state) }
+          _, to_state = transitions.first
 
-          set_current_state to
+          raise InvalidTransition unless to_state
+
+          set_current_state to_state
         end
       end
     end
@@ -81,56 +94,103 @@ module AASM
     end
   end
 
-  module ClassMethods
-    def aasm(&block)
-      config = Configuration.new(self)
-      config.instance_eval(&block)
-      config.configure!
-    end
-  end
-
   def self.included(klass)
-    klass.extend ClassMethods
+    klass.extend Configuration::DSL::ClassMethods
   end
 end
 
-describe AASM do
-  class Job
-    include AASM
+# Tests
+
+require 'minitest/autorun'
+require 'minitest/reporters'
+
+Minitest::Reporters.use!
+Minitest::Reporters.use! Minitest::Reporters::SpecReporter.new
+
+describe MiniAASM do
+  class PeriodicJob
+    include MiniAASM
 
     aasm do
-      state :creating, initial: true
-      state :running
-      state :finished
+      state :waiting, initial: true
+      state :executing
+      state :terminated
 
       event :work_succeeded do
-        transitions from: :creating, to: :running
-        transitions from: :running, to: :finished
+        transitions from: :executing, to: :waiting
+        transitions from: :waiting, to: :executing
       end
+
+      event :work_failed do
+        transitions from: %i[waiting executing], to: :terminated
+      end
+    end
+
+    def work
+      send("work_#{current_state}")
+    end
+
+    private
+
+    def work_executing
+      # ...
+      work_succeeded!
+    end
+
+    def work_waiting
+      # ...
+      work_succeeded!
     end
   end
 
   before do
-    @subject = Job.new
+    @subject = PeriodicJob.new
   end
 
   describe '#states' do
-    it 'returns array of declared states' do
-      _(@subject.states).must_equal %i[creating running finished]
+    it 'returns states' do
+      _(@subject.states).must_equal %i[waiting executing terminated]
     end
   end
 
   describe '#current_state' do
-    it 'returns current state' do
-      _(@subject.current_state).must_equal :creating
+    it 'returns state' do
+      _(@subject.current_state).must_equal :waiting
     end
   end
 
-  describe '#<event>!' do
-    it 'change changes matching from #current_state' do
-      _(@subject.work_succeeded!).must_equal :running
-      _(@subject.work_succeeded!).must_equal :finished
-      _(@subject.work_succeeded!).must_equal :finished
+  describe '#set_current_state' do
+    it 'returns new state' do
+      _(@subject.set_current_state(:terminated)).must_equal :terminated
+    end
+
+    it 'raises exception with invalid state' do
+      assert_raises(MiniAASM::UndefinedState) { @subject.set_current_state(:cooked) }
+    end
+  end
+
+  describe '.aasm' do
+    describe '.event' do
+      describe '.transistions' do
+        it 'change' do
+          _(@subject.work_succeeded!).must_equal :executing
+        end
+
+        it 'multiple matching' do
+          _(@subject.work_succeeded!).must_equal :executing
+          _(@subject.work_failed!).must_equal :terminated
+        end
+
+        it 'persist' do
+          _(@subject.work_succeeded!).must_equal :executing
+          _(@subject.work_succeeded!).must_equal :waiting
+        end
+
+        it 'raises exception without matching' do
+          _(@subject.set_current_state(:terminated)).must_equal :terminated
+          assert_raises(MiniAASM::InvalidTransition) { @subject.work_succeeded! }
+        end
+      end
     end
   end
 end

@@ -1,4 +1,4 @@
-# Mini AASM
+# MiniAASM
 
 The [State Machine](https://en.wikipedia.org/wiki/Finite-state_machine) library is intended to be compatibility with [lightweight implementation of the Ruby language](https://github.com/mruby/mruby).
 
@@ -7,7 +7,7 @@ The [State Machine](https://en.wikipedia.org/wiki/Finite-state_machine) library 
 
 ```ruby
   class Job
-    include AASM
+    include MiniAASM
 
     aasm do
       state :creating, initial: true
@@ -61,10 +61,24 @@ end
 2. States should be separated into atomic units of work.
    
 ```ruby
-  event :work_succeeded do
-    transitions from: :enqueuing_job, to: :waiting_for_job # vs. enqueued
-    transitions from: :waiting_for_job, to: :finished # vs. running
+class PeriodicJob
+  include MiniAASM
+
+  aasm do
+    state :waiting, initial: true
+    state :executing
+    state :terminated
+
+    event :work_succeeded do
+      transitions from: :executing, to: :waiting
+      transitions from: :waiting, to: :executing
+    end
+
+    event :work_failed do
+      transitions from: [:waiting, :executing], to: :terminated
+    end
   end
+end
 ```
 
 3. The state machine should be trying to converge a eventually consistent end state which looks like a status.
