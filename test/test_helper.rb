@@ -11,4 +11,4 @@ Minitest::Reporters.use! Minitest::Reporters::SpecReporter.new
 
 require "mini-aasm"
 
-require "support/periodic_job"
+require "support/transmission_job"

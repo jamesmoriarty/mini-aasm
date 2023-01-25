@@ -4,18 +4,18 @@ require "test_helper"
 
 describe MiniAASM do
   before do
-    @subject = PeriodicJob.new
+    @subject = TransmissionJob.new
   end
 
   describe "#states" do
     it "returns states" do
-      _(@subject.states).must_equal %i[waiting executing terminated]
+      _(@subject.states).must_equal %i[transmitting waiting_confirmation terminated]
     end
   end
 
   describe "#current_state" do
     it "returns state" do
-      _(@subject.current_state).must_equal :waiting
+      _(@subject.current_state).must_equal :transmitting
     end
   end
 
@@ -33,17 +33,17 @@ describe MiniAASM do
     describe ".event" do
       describe ".transistions" do
         it "change" do
-          _(@subject.work_succeeded!).must_equal :executing
+          _(@subject.work_succeeded!).must_equal :waiting_confirmation
         end
 
         it "multiple matching" do
-          _(@subject.work_succeeded!).must_equal :executing
+          _(@subject.work_succeeded!).must_equal :waiting_confirmation
           _(@subject.work_failed!).must_equal :terminated
         end
 
         it "persist" do
-          _(@subject.work_succeeded!).must_equal :executing
-          _(@subject.work_succeeded!).must_equal :waiting
+          _(@subject.work_succeeded!).must_equal :waiting_confirmation
+          _(@subject.work_succeeded!).must_equal :transmitting
         end
 
         it "raises exception without matching" do
@@ -53,7 +53,7 @@ describe MiniAASM do
 
         describe "guard" do
           it "raises exception when eval to false" do
-            @subject = PeriodicJob.new(ready: false)
+            @subject = TransmissionJob.new(hold: false)
 
             assert_raises(MiniAASM::InvalidTransition) { @subject.work_succeeded! }
           end

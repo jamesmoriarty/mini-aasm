@@ -5,29 +5,29 @@ A State Machine library intended to be compatible with lightweight implementatio
 ## Usage
 
 ```ruby
-class PeriodicJob
+class TransmissionJob
   include MiniAASM
 
   aasm do
-    state :waiting, initial: true
-    state :executing
-    state :terminated
+    state :transmitting, initial: true
+    state :waiting_confirmation
+    state :finished
 
     event :work_succeeded do
-      transitions from: :executing, to: :waiting
-      transitions from: :waiting, to: :executing, guard: %i[ready?]
+      transitions from: :waiting_confirmation, to: :transmitting
+      transitions from: :transmitting, to: :waiting_confirmation, guard: %i[hold?]
     end
 
     event :work_failed do
-      transitions from: %i[waiting executing], to: :terminated
+      transitions from: %i[transmitting waiting_confirmation], to: :finished
     end
-
-    # ...
   end
+
+  # ...
 end
 ```
 
-_See [test/support/periodic_job.rb](test/support/periodic_job.rb)._
+_See [test/support/transmission_job.rb](test/support/transmission_job.rb)._
 
 ```ruby
 > job = PeriodicJob.new
