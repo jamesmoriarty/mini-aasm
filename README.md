@@ -11,7 +11,7 @@ class TransmissionJob
   aasm do
     state :transmitting, initial: true
     state :waiting_confirmation
-    state :finished
+    state :terminated
 
     event :work_succeeded do
       transitions from: :waiting_confirmation, to: :transmitting
@@ -19,7 +19,7 @@ class TransmissionJob
     end
 
     event :work_failed do
-      transitions from: %i[transmitting waiting_confirmation], to: :finished
+      transitions from: %i[transmitting waiting_confirmation], to: :terminated
     end
   end
 
