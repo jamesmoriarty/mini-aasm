@@ -62,3 +62,5 @@ describe MiniAASM do
     end
   end
 end
+
+binding.pry

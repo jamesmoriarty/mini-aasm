@@ -27,17 +27,26 @@ class PeriodicJob
 end
 ```
 
+_See [test/support/periodic_job.rb](test/support/periodic_job.rb)._
+
+```ruby
+> job = PeriodicJob.new
+=> #<PeriodicJob:0x000055de0c03ec98>
+> job.current_state
+=> :waiting
+job.work_succeeded!
+=> :executing
+> job.work_succeeded!
+=> :waiting
+> job.work_failed!
+=> :terminated
 ```
-> db = DBInstance.new
-=> #<DBInstance:0x000055a4a77c52f8>
-> db.current_state
-=> :creating
-> db.created!
-=> :wait_running
-> db.detect_online!
-=> :running
-> db.detect_online!
-=> MiniAASM::InvalidTransition (MiniAASM::InvalidTransition)
+
+```ruby
+> job = PeriodicJob.new(ready: false)
+=> #<PeriodicJob:0x000055de0c11e528>
+> job.work_succeeded!
+MiniAASM::InvalidTransition: MiniAASM::InvalidTransition
 ```
 
 ## Best Practice
