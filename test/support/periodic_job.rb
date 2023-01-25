@@ -31,7 +31,7 @@ class PeriodicJob
   def work_executing
     # ...
     work_succeeded!
-  rescue => e
+  rescue StandardError
     work_failed!
   end
 
