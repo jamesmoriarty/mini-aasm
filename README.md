@@ -1,6 +1,6 @@
 # MiniAASM
 
-A State Machine library intended to be compatible with lightweight implementations of the Ruby language using 100LOC and only standard libraries.
+A State Machine library intended to be compatible with lightweight implementations of the Ruby language using 100LOC and only standard libraries. Inspired by [Heroku Postgres State Machines](https://www.citusdata.com/blog/2016/08/12/state-machines-to-run-databases/).
 
 ## Usage
 
