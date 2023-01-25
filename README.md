@@ -30,14 +30,14 @@ end
 _See [test/support/transmission_job.rb](test/support/transmission_job.rb)._
 
 ```ruby
-> job = PeriodicJob.new
-=> #<PeriodicJob:0x000055de0c03ec98>
-> job.current_state
-=> :waiting
+> job = TransmissionJob.new
+=> #<TransmissionJob:0x000056134d801450>
+>  job.current_state
+=> :transmitting
 job.work_succeeded!
-=> :executing
+=> :waiting_confirmation
 > job.work_succeeded!
-=> :waiting
+=> :transmitting
 > job.work_failed!
 => :terminated
 ```
