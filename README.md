@@ -43,12 +43,6 @@ job.work_succeeded!
 > job.work_failed!
 => :terminated
 ```
-
-## Best Practice
-
-1. The state machine should be trying to converge an eventually consistent end state which looks like a status.
-2. States should be separated into atomic units of work.
-3. State transitions should be invoked in an idempotent way.
   
 ## Installation
 
