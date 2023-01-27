@@ -1,5 +1,7 @@
 # MiniAASM
 
+![Gem Version][3] ![Gem][1] ![Build Status][2]
+
 A State Machine library intended to be compatible with lightweight implementations of the Ruby language using 100LOC and only standard libraries. Inspired by [Heroku Postgres State Machines](https://www.citusdata.com/blog/2016/08/12/state-machines-to-run-databases/).
 
 ## Usage
@@ -79,4 +81,8 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/mini-aasm.
+Bug reports and pull requests are welcome on GitHub at https://github.com/jamesmoriarty/mini-aasm.
+
+[1]: https://img.shields.io/gem/dt/mini-aasm
+[2]: https://github.com/jamesmoriarty/mini-aasm/workflows/Continuous%20Integration/badge.svg?branch=main
+[3]: https://img.shields.io/gem/v/mini-aasm
