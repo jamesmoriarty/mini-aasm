@@ -54,8 +54,6 @@ module MiniAASM
     def configure!
       _aasm = self
 
-      klass.define_method(:_aasm) { _aasm }
-
       klass.define_method(:states) do
         _aasm.states.keys
       end
