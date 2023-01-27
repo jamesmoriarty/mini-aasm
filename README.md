@@ -2,7 +2,7 @@
 
 ![Gem Version][3] ![Gem][1] ![Build Status][2]
 
-A [State Machine](https://en.wikipedia.org/wiki/Finite-state_machine) library intended to be compatible with lightweight implementations of the [Ruby language](https://github.com/mruby/mruby) using 100LOC and only standard libraries. Inspired by [Heroku Postgres State Machines](https://www.citusdata.com/blog/2016/08/12/state-machines-to-run-databases/).
+A [State Machine](https://en.wikipedia.org/wiki/Finite-state_machine) library intended to be compatible with [lightweight implementations](https://github.com/mruby/mruby) of the Ruby language using 100LOC and only standard libraries. Inspired by [Heroku Postgres State Machines](https://www.citusdata.com/blog/2016/08/12/state-machines-to-run-databases/).
 
 ## Usage
 
