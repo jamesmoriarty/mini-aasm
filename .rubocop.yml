@@ -39,6 +39,3 @@ Naming/FileName:
 Lint/UnderscorePrefixedVariableName:
   Exclude:
     - lib/mini-aasm.rb
-
-Gemspec/RequireMFA:
-  Enabled: false
